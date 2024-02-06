@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Ratings from "./Ratings";
 import RatingTemp from "./RatingTemp";
 import Pagination from "./Pagination";
@@ -7,11 +7,19 @@ import { CiStar } from "react-icons/ci";
 import { AiFillStar } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { customer_review } from "../store/reducers/homeReducer";
-
+import {
+  customer_review,
+  get_product,
+  get_review,
+  messageClear,
+} from "../store/reducers/homeReducer";
+import toast from "react-hot-toast";
 const Reviews = ({ product }) => {
   const dispatch = useDispatch();
   const { userInfo } = useSelector((state) => state.auth);
+  const { successMessage, reviews, totalReview, rating_review } = useSelector(
+    (state) => state.home
+  );
   const [pageNumber, setPageNumber] = useState(1);
   const [parPage, setParPage] = useState(10);
 
@@ -28,18 +36,45 @@ const Reviews = ({ product }) => {
     };
     dispatch(customer_review(obj));
   };
+
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(
+        get_review({
+          productId: product._id,
+          pageNumber,
+        })
+      );
+      dispatch(get_product(product.slug));
+      dispatch(messageClear());
+      setRat("");
+      setRe("");
+    }
+  }, [successMessage]);
+
+  useEffect(() => {
+    if (product._id) {
+      dispatch(
+        get_review({
+          productId: product._id,
+          pageNumber,
+        })
+      );
+    }
+  }, [pageNumber, product]);
   return (
     <div className=" mt-8">
       <div className=" flex gap-10 md:flex-col">
         <div className=" flex flex-col gap-2 justify-start items-start py-4">
           <div>
-            <span className=" text-6xl font-semibold">4.5</span>
+            <span className=" text-6xl font-semibold">{product.rating}</span>
             <span className=" text-3xl font-semibold text-slate-600">/5</span>
           </div>
           <div className=" flex text-4xl">
-            <Ratings ratings={4.5} />
+            <Ratings ratings={product.rating} />
           </div>
-          <p className=" text-sm text-slate-600">23 Ratings</p>
+          <p className=" text-sm text-slate-600">{totalReview} Reviews</p>
         </div>
         <div className=" flex gap-2 flex-col py-4">
           <div className=" flex justify-start items-center gap-5">
@@ -47,45 +82,90 @@ const Reviews = ({ product }) => {
               <RatingTemp rating={5} />
             </div>
             <div className=" w-[200px] h-[14px] bg-slate-200 relative">
-              <div className=" h-full bg-[#EDBB0E] w-[60%]"></div>
+              <div
+                style={{
+                  width: `${Math.floor(
+                    (100 * (rating_review[0]?.sum || 0)) / totalReview
+                  )}%`,
+                }}
+                className=" h-full bg-[#EDBB0E]"
+              ></div>
             </div>
-            <p className=" text-sm text-slate-600 w-0">10</p>
+            <p className=" text-sm text-slate-600 w-0">
+              {rating_review[0]?.sum}
+            </p>
           </div>
           <div className=" flex justify-start items-center gap-5">
             <div className=" text-md flex gap-1 w-[93px]">
               <RatingTemp rating={4} />
             </div>
             <div className=" w-[200px] h-[14px] bg-slate-200 relative">
-              <div className=" h-full bg-[#EDBB0E] w-[70%]"></div>
+              <div
+                style={{
+                  width: `${Math.floor(
+                    (100 * (rating_review[1]?.sum || 0)) / totalReview
+                  )}%`,
+                }}
+                className=" h-full bg-[#EDBB0E] "
+              ></div>
             </div>
-            <p className=" text-sm text-slate-600 w-0">20</p>
+            <p className=" text-sm text-slate-600 w-0">
+              {rating_review[1]?.sum}
+            </p>
           </div>
           <div className=" flex justify-start items-center gap-5">
             <div className=" text-md flex gap-1 w-[93px]">
               <RatingTemp rating={3} />
             </div>
             <div className=" w-[200px] h-[14px] bg-slate-200 relative">
-              <div className=" h-full bg-[#EDBB0E] w-[40%]"></div>
+              <div
+                className=" h-full bg-[#EDBB0E]"
+                style={{
+                  width: `${Math.floor(
+                    (100 * (rating_review[2]?.sum || 0)) / totalReview
+                  )}%`,
+                }}
+              ></div>
             </div>
-            <p className=" text-sm text-slate-600 w-0">8</p>
+            <p className=" text-sm text-slate-600 w-0">
+              {rating_review[2]?.sum}
+            </p>
           </div>
           <div className=" flex justify-start items-center gap-5">
             <div className=" text-md flex gap-1 w-[93px]">
               <RatingTemp rating={2} />
             </div>
             <div className=" w-[200px] h-[14px] bg-slate-200 relative">
-              <div className=" h-full bg-[#EDBB0E] w-[30%]"></div>
+              <div
+                className=" h-full bg-[#EDBB0E]"
+                style={{
+                  width: `${Math.floor(
+                    (100 * (rating_review[3]?.sum || 0)) / totalReview
+                  )}%`,
+                }}
+              ></div>
             </div>
-            <p className=" text-sm text-slate-600 w-0">5</p>
+            <p className=" text-sm text-slate-600 w-0">
+              {rating_review[3]?.sum}
+            </p>
           </div>
           <div className=" flex justify-start items-center gap-5">
             <div className=" text-md flex gap-1 w-[93px]">
               <RatingTemp rating={1} />
             </div>
             <div className=" w-[200px] h-[14px] bg-slate-200 relative">
-              <div className=" h-full bg-[#EDBB0E] w-[10%]"></div>
+              <div
+                className=" h-full bg-[#EDBB0E] "
+                style={{
+                  width: `${Math.floor(
+                    (100 * (rating_review[4]?.sum || 0)) / totalReview
+                  )}%`,
+                }}
+              ></div>
             </div>
-            <p className=" text-sm text-slate-600 w-0">3</p>
+            <p className=" text-sm text-slate-600 w-0">
+              {rating_review[4]?.sum}
+            </p>
           </div>
           <div className=" flex justify-start items-center gap-5">
             <div className=" text-md flex gap-1 w-[93px]">
@@ -99,34 +179,31 @@ const Reviews = ({ product }) => {
         </div>
       </div>
       <h2 className=" text-slate-600 text-xl font-bold py-5">
-        Products Reviews 30
+        Products Reviews {totalReview}
       </h2>
       <div className="flex flex-col gap-8 pb-10 py-4">
-        {[1, 2, 3, 4, 5, 6].map((r, i) => (
+        {reviews.map((r, i) => (
           <div key={i} className=" flex flex-col gap-1">
             <div className=" flex justify-between items-center">
               <div className=" flex gap-1 text-xl">
-                <RatingTemp rating={4} />
+                <RatingTemp rating={r.rating} />
               </div>
-              <span className=" text-slate-600">7 june 2023</span>
+              <span className=" text-slate-600">{r.date}</span>
             </div>
-            <span className=" text-slate-600 text-md">Vaskar Ghosh</span>
-            <p className=" text-slate-600 text-sm">
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit. Laborum,
-              eligendi voluptatum earum, aliquid commodi modi molestias iusto
-              eos porro sunt nemo. Aliquam accusantium eligendi doloribus at rem
-              quidem numquam similique.
-            </p>
+            <span className=" text-slate-600 text-md">{r.name}</span>
+            <p className=" text-slate-600 text-sm">{r.review}</p>
           </div>
         ))}
         <div className=" flex justify-end">
-          <Pagination
-            setPageNumber={setPageNumber}
-            pageNumber={pageNumber}
-            parPage={parPage}
-            totalItem={20}
-            showItem={Math.floor(20 / 3)}
-          />
+          {totalReview > 5 && (
+            <Pagination
+              setPageNumber={setPageNumber}
+              pageNumber={pageNumber}
+              parPage={parPage}
+              totalItem={totalReview}
+              showItem={Math.round(totalReview / 5 + 2)}
+            />
+          )}
         </div>
       </div>
       <div>
@@ -150,6 +227,7 @@ const Reviews = ({ product }) => {
             </div>
             <form onSubmit={review_submit}>
               <textarea
+                value={re}
                 required
                 onChange={(e) => setRe(e.target.value)}
                 className=" border outline-none p-3 w-full"

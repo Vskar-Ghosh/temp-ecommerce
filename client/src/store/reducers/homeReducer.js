@@ -73,8 +73,22 @@ export const customer_review = createAsyncThunk(
   "review/customer_review",
   async (info, { fulfillWithValue, rejectWithValue }) => {
     try {
-      const { data } = await api.post(`/home/customer/submit-revieew`, info);
-      console.log(data);
+      const { data } = await api.post(`/home/customer/submit-review`, info);
+      return fulfillWithValue(data);
+    } catch (error) {
+      console.log(error.response);
+    }
+  }
+);
+export const get_review = createAsyncThunk(
+  "review/get_review",
+  async ({ productId, pageNumber }, { fulfillWithValue, rejectWithValue }) => {
+    try {
+      const { data } = await api.get(
+        `/home/customer/get-reviews/${productId}?pageNo=${pageNumber}`
+      );
+
+      return fulfillWithValue(data);
     } catch (error) {
       console.log(error.response);
     }
@@ -100,6 +114,9 @@ export const homeReducer = createSlice({
     moreProducts: [],
     successMessage: "",
     errorMessage: "",
+    reviews: [],
+    totalReview: 0,
+    rating_review: [],
   },
   reducers: {
     messageClear: (state, _) => {
@@ -131,6 +148,14 @@ export const homeReducer = createSlice({
         state.totalProduct = payload.totalProduct;
         state.products = payload.products;
         state.parPage = payload.parPage;
+      })
+      .addCase(customer_review.fulfilled, (state, { payload }) => {
+        state.successMessage = payload.message;
+      })
+      .addCase(get_review.fulfilled, (state, { payload }) => {
+        state.totalReview = payload.totalReview;
+        state.rating_review = payload.rating_review;
+        state.reviews = payload.reviews;
       });
     //   .addCase(categoryAdd.pending, (state, _) => {
     //     state.loader = true;
